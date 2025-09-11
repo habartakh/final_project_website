@@ -1,0 +1,6 @@
+footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    /* Ensures the footer spans the full width */
+}

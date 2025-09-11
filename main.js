@@ -3,7 +3,7 @@ let vueApp = new Vue({
     data: {
         // ros connection
         ros: null,
-        rosbridge_address: 'wss://i-0eff31f8963253b37.robotigniteacademy.com/37780eb2-3ccd-48ad-bd81-cd8e8fa36b2a/rosbridge/',
+        rosbridge_address: 'wss://i-0a88208c3b598c5ed.robotigniteacademy.com/114106dc-aa31-491e-9289-4aee78d51236/rosbridge/',
         connected: false,
         // page content
         menu_title: 'Connection',
@@ -34,16 +34,35 @@ let vueApp = new Vue({
             this.ros.close()
         },
         sendCommand: function() {
-            let topic = new ROSLIB.Topic({
-                ros: this.ros,
-                name: '/fastbot/cmd_vel',
-                messageType: 'geometry_msgs/Twist'
+
+            console.log("Send action goal!")
+            // Create Action Client
+            let actionClient = new ROSLIB.ActionClient({
+            ros: this.ros,
+            serverName: '/set_joint_values',  
+            actionName: 'moveit2_scripts/action/SetJointValues'  
             })
-            let message = new ROSLIB.Message({
-                linear: { x: 0.2, y: 0, z: 0, },
-                angular: { x: 0, y: 0, z: 0.5, },
+
+            let goalMessage = {
+                joint_values: [0.245, -2.674, -1.915, -0.834, 2.821, -0.491]
+            }
+
+            let goal = new ROSLIB.Goal({
+                actionClient: actionClient,
+                goalMessage: goalMessage
             })
-            topic.publish(message)
+
+            goal.on('feedback', function (feedback) {
+                console.log('Feedback:', feedback);
+            })
+
+            goal.on('result', function (result) {
+                console.log('Final result:', result);
+                alert('Success: ' + result.success + '\nMessage: ' + result.message);
+            })
+
+            goal.send()
+           
         },
         sendTurnRightCommand: function() {
             let topic = new ROSLIB.Topic({

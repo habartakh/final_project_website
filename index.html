@@ -1,8 +1,9 @@
 <html>
 
 <head>
-    <title>My first web page for ROS!</title>
+    <title>Final Project</title>
     <link rel="stylesheet" href="bootstrap.css">
+    <link rel="stylesheet" href="custom.css">
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
     <script src="https://s3.eu-west-1.amazonaws.com/rosject.io/js/roslib.min.js"></script>
 </head>
@@ -26,13 +27,23 @@
                         <div class="card-body">
                             <h3>{{ menu_title }}</h3>
                             <hr>
-                            <label>ROSBridge address</label>
+                            <label class="text-light">ROSBridge address</label>
                             <br>
-                            <input type="text" v-model="rosbridge_address" />
+                            <input type="text" class="form-control" v-model="rosbridge_address" />
                             <br>
-                            <button class="mt-2 btn btn-success" v-if="connected"
-                                @click="disconnect">Connected!</button>
+                            <button class="mt-2 btn btn-light" v-if="connected" @click="disconnect">Connected!</button>
                             <button class="mt-2 btn btn-primary" v-else @click="connect">Connect!</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <div class="card border-light mb-3">
+                        <div class="card-body">
+                            <h2 class="text-center">{{ main_title }}</h2>
+                            <hr>
+                            <p>Some actions for the robot</p>
+                            <button class="mt-2 btn btn-primary" :disabled="!connected" @click="sendCommand">Move the
+                                robot!</button>
                         </div>
                     </div>
                 </div>
@@ -42,9 +53,9 @@
 
 
     <!-- footer -->
-    <footer class="footer mt-auto bg-dark text-light">
+    <footer>
         <div class="container">
-            <h5>page ends here!</h5>
+            <h6>page ends here!</h6>
         </div>
     </footer>
 
@@ -56,7 +67,7 @@
 
         var script = document.createElement('script');
         script.type = 'text/javascript';
-        script.src = 'main.js?v=2.' + Date.now();
+        script.src = 'main.js?v=16.' + Date.now();
         document.head.appendChild(script);
     </script>
 
