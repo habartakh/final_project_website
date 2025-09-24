@@ -3,7 +3,7 @@ let vueApp = new Vue({
     data: {
         // ros connection
         ros: null,
-        rosbridge_address: 'wss://i-0a88208c3b598c5ed.robotigniteacademy.com/114106dc-aa31-491e-9289-4aee78d51236/rosbridge/',
+        rosbridge_address: 'wss://i-073a241deadcb1a33.robotigniteacademy.com/c0b97d42-8efd-4271-aa59-89a1b9d39f2b/rosbridge/',
         connected: false,
         // page content
         menu_title: 'Connection',
@@ -20,6 +20,9 @@ let vueApp = new Vue({
             this.ros.on('connection', () => {
                 this.connected = true
                 console.log('Connection to ROSBridge established!')
+
+                // Camera Setup
+                this.setCamera()
             })
             this.ros.on('error', (error) => {
                 console.log('Something went wrong when trying to connect')
@@ -27,6 +30,10 @@ let vueApp = new Vue({
             })
             this.ros.on('close', () => {
                 this.connected = false
+
+                // Do not display the Camera div on the webpage when disconnected 
+                document.getElementById('divCamera').innerHTML = ''
+
                 console.log('Connection to ROSBridge was closed!')
             })
         },
@@ -64,29 +71,21 @@ let vueApp = new Vue({
             goal.send()
            
         },
-        sendTurnRightCommand: function() {
-            let topic = new ROSLIB.Topic({
-                ros: this.ros,
-                name: '/fastbot/cmd_vel',
-                messageType: 'geometry_msgs/Twist'
+        setCamera: function() {
+            let without_wss = this.rosbridge_address.split('wss://')[1]
+            console.log(without_wss)
+            let domain = without_wss.split('/')[0] + '/' + without_wss.split('/')[1]
+            console.log(domain)
+            let host = domain 
+            //let host = domain + '/cameras'
+            let viewer = new MJPEGCANVAS.Viewer({
+                divID: 'divCamera',
+                host: host,
+                width: 320,
+                height: 240,
+                topic: '/D415/color/image_raw',
+                ssl: true,
             })
-            let message = new ROSLIB.Message({
-                linear: { x: 0.0, y: 0, z: 0, },
-                angular: { x: 0, y: 0, z: -0.2, },
-            })
-            topic.publish(message)
-        },
-        sendStopCommand: function() {
-            let topic = new ROSLIB.Topic({
-                ros: this.ros,
-                name: '/fastbot/cmd_vel',
-                messageType: 'geometry_msgs/Twist'
-            })
-            let message = new ROSLIB.Message({
-                linear: { x: 0.0, y: 0, z: 0, },
-                angular: { x: 0, y: 0, z: 0.0, },
-            })
-            topic.publish(message)
         },
     },
     mounted() {
