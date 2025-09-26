@@ -3,7 +3,7 @@ let vueApp = new Vue({
     data: {
         // ros connection
         ros: null,
-        rosbridge_address: 'wss://i-073a241deadcb1a33.robotigniteacademy.com/c0b97d42-8efd-4271-aa59-89a1b9d39f2b/rosbridge/',
+        rosbridge_address: 'wss://i-0e982784cfb267681.robotigniteacademy.com/a45a094c-f050-48f8-a8db-4aeeb4b1c53a/rosbridge/',
         connected: false,
         // page content
         menu_title: 'Connection',
@@ -13,7 +13,8 @@ let vueApp = new Vue({
         connect: function() {
             // define ROSBridge connection object
             this.ros = new ROSLIB.Ros({
-                url: this.rosbridge_address
+                url: this.rosbridge_address,
+                timeout : 120000 //120s
             })
 
             // define callbacks
@@ -40,37 +41,19 @@ let vueApp = new Vue({
         disconnect: function() {
             this.ros.close()
         },
-        sendCommand: function() {
-
-            console.log("Send action goal!")
-            // Create Action Client
-            let actionClient = new ROSLIB.ActionClient({
-            ros: this.ros,
-            serverName: '/set_joint_values',  
-            actionName: 'moveit2_scripts/action/SetJointValues'  
+        startTrajectory: function() {
+            
+            let topic = new ROSLIB.Topic({
+                ros: this.ros,
+                name: '/start_signal_topic',
+                messageType: 'std_msgs/Bool'
             })
-
-            let goalMessage = {
-                joint_values: [0.245, -2.674, -1.915, -0.834, 2.821, -0.491]
-            }
-
-            let goal = new ROSLIB.Goal({
-                actionClient: actionClient,
-                goalMessage: goalMessage
+            let message = new ROSLIB.Message({
+                data : true
             })
-
-            goal.on('feedback', function (feedback) {
-                console.log('Feedback:', feedback);
-            })
-
-            goal.on('result', function (result) {
-                console.log('Final result:', result);
-                alert('Success: ' + result.success + '\nMessage: ' + result.message);
-            })
-
-            goal.send()
-           
+            topic.publish(message)     
         },
+
         setCamera: function() {
             let without_wss = this.rosbridge_address.split('wss://')[1]
             console.log(without_wss)
@@ -83,7 +66,7 @@ let vueApp = new Vue({
                 host: host,
                 width: 320,
                 height: 240,
-                topic: '/D415/color/image_raw',
+                topic: '/aruco/image_marked',
                 ssl: true,
             })
         },
