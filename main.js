@@ -3,18 +3,24 @@ let vueApp = new Vue({
     data: {
         // ros connection
         ros: null,
-        rosbridge_address: 'wss://i-0e982784cfb267681.robotigniteacademy.com/a45a094c-f050-48f8-a8db-4aeeb4b1c53a/rosbridge/',
+        rosbridge_address: 'wss://i-013742bf516764eb5.robotigniteacademy.com/6127e1a7-6d6f-4851-bf29-f4d3b2632ef4/rosbridge/',
         connected: false,
         // page content
         menu_title: 'Connection',
         main_title: 'Main title, from Vue!!',
+         // 3D Model
+        viewer: null,
+        tfClient: null,
+        urdfClient: null,
+
     },
     methods: {
         connect: function() {
             // define ROSBridge connection object
             this.ros = new ROSLIB.Ros({
                 url: this.rosbridge_address,
-                timeout : 120000 //120s
+                timeout : 120000, //120s
+                groovyCompatibility: false //! IMPORTANT: Cannot visualize the robot without it!
             })
 
             // define callbacks
@@ -24,6 +30,12 @@ let vueApp = new Vue({
 
                 // Camera Setup
                 this.setCamera()
+
+                // Do not display progress bar until robot starts moving
+                // document.getElementById('progress').innerHTML = ''
+
+                // Setup 3D Viewer
+                this.setup3DViewer()
             })
             this.ros.on('error', (error) => {
                 console.log('Something went wrong when trying to connect')
@@ -35,6 +47,10 @@ let vueApp = new Vue({
                 // Do not display the Camera div on the webpage when disconnected 
                 document.getElementById('divCamera').innerHTML = ''
 
+                // document.getElementById('progress').innerHTML = ''
+
+                this.unset3DViewer()
+
                 console.log('Connection to ROSBridge was closed!')
             })
         },
@@ -43,6 +59,7 @@ let vueApp = new Vue({
         },
         startTrajectory: function() {
             
+            // Publish start signal to move arm and start calibration
             let topic = new ROSLIB.Topic({
                 ros: this.ros,
                 name: '/start_signal_topic',
@@ -51,7 +68,10 @@ let vueApp = new Vue({
             let message = new ROSLIB.Message({
                 data : true
             })
-            topic.publish(message)     
+            topic.publish(message) 
+
+            // Display progress bar 
+                 
         },
 
         setCamera: function() {
@@ -69,6 +89,49 @@ let vueApp = new Vue({
                 topic: '/aruco/image_marked',
                 ssl: true,
             })
+        },
+
+        setup3DViewer() {
+            this.viewer = new ROS3D.Viewer({
+                background: '#cccccc',
+                divID: 'div3DViewer',
+                width: 350,
+                height: 320,
+                antialias: true,
+                fixedFrame: 'base_link'
+            })
+
+            // Add a grid.
+            this.viewer.addObject(new ROS3D.Grid({
+                color:'#0181c4',
+                cellSize: 0.5,
+                num_cells: 20
+            }))
+
+            // Setup a client to listen to TFs.
+            this.tfClient = new ROSLIB.TFClient({
+                ros: this.ros,
+                angularThres: 0.01,
+                transThres: 0.01,
+                rate: 10.0,
+                fixedFrame: 'base_link'
+            })
+
+            // Setup the URDF client.
+            this.urdfClient = new ROS3D.UrdfClient({
+                ros: this.ros,
+                param: '/robot_state_publisher:robot_description',
+                tfClient: this.tfClient,
+                // We use "path: location.origin + location.pathname"
+                // instead of "path: window.location.href" to remove query params,
+                // otherwise the assets fail to load
+                path: location.origin + location.pathname,
+                rootObject: this.viewer.scene,
+                loader: ROS3D.COLLADA_LOADER_2
+            })
+        },
+        unset3DViewer() {
+            document.getElementById('div3DViewer').innerHTML = ''
         },
     },
     mounted() {

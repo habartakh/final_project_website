@@ -11,9 +11,16 @@
 
     <!-- EventEmitter2 (needed by mjpegcanvas) -->
     <script src="https://cdn.jsdelivr.net/npm/eventemitter2@0.4.14/lib/eventemitter2.js"></script>
-    <script type="text/javascript" src="mjpegcanvas.min.js"></script>
+    <script type="text/javascript" src="./libs/mjpegcanvas.min.js"></script>
 
     <!-- <script type="text/javascript" src="roslib.js"></script> -->
+
+    <!-- 3D visualization -->
+    <script src="./libs/three.min.js"></script>
+    <script src="./libs/ColladaLoader.js"></script>
+    <script src="./libs/ColladaLoader2.js"></script>
+    <script src="./libs/STLLoader.js"></script>
+    <script src="./libs/ros3d.min.js"></script>
 </head>
 
 <body class="d-flex flex-column h-100">
@@ -60,6 +67,22 @@
                             <!-- <p>Some actions for the robot</p>-->
                             <button class="mt-2 btn btn-primary" :disabled="!connected" @click="startTrajectory">Start
                                 Trajectory!</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Robot TF Visualization-->
+                <div class="col-md-6">
+                    <div class="card border-light mb-3">
+                        <div class="card-body">
+                            <h2 class="text-center">Robot Model</h2>
+                            <hr>
+                            <div id="div3DViewer"></div>
+                            <!-- <div class="progress">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                                    aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 75%;">
+                                </div>
+                            </div> -->
                         </div>
                     </div>
                 </div>
