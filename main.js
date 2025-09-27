@@ -12,6 +12,10 @@ let vueApp = new Vue({
         viewer: null,
         tfClient: null,
         urdfClient: null,
+        //Progress bar
+        progress: 0,
+        showProgressBar: false,
+        trajectoryStarted: false,
 
     },
     methods: {
@@ -36,6 +40,9 @@ let vueApp = new Vue({
 
                 // Setup 3D Viewer
                 this.setup3DViewer()
+
+                // Subscribe to progress topic  
+                this.subscribeToProgress();
             })
             this.ros.on('error', (error) => {
                 console.log('Something went wrong when trying to connect')
@@ -70,7 +77,10 @@ let vueApp = new Vue({
             })
             topic.publish(message) 
 
-            // Display progress bar 
+            this.trajectoryStarted = true;
+            this.progress = 0;
+            this.showProgressBar = true;
+             
                  
         },
 
@@ -132,6 +142,28 @@ let vueApp = new Vue({
         },
         unset3DViewer() {
             document.getElementById('div3DViewer').innerHTML = ''
+        },
+
+        // Update Progress
+        subscribeToProgress() {
+            const progressTopic = new ROSLIB.Topic({
+                ros: this.ros,
+                name: '/trajectory_progress', 
+                messageType: 'std_msgs/Int16',
+            });
+
+            progressTopic.subscribe((message) => {
+                if (!this.trajectoryStarted) return;
+
+                this.progress =message.data;
+
+                // Wait until the robot completes the rotations for its final pose : progress = 100%
+                // Then, publish a progress > 100 that will close the progress bar 
+                if (this.progress > 100) {
+                    this.showProgressBar = false;
+                    this.trajectoryStarted = false;
+                }
+            });
         },
     },
     mounted() {
