@@ -19,6 +19,8 @@ let vueApp = new Vue({
         // Start Position Joint Values
         jointInputs: [0, 0, 0, 0, 0, 0], 
         serviceResult: null,
+        //TF broadcast
+        tf_broadcast_started: false,
 
 
     },
@@ -85,6 +87,23 @@ let vueApp = new Vue({
             this.progress = 0;
             this.showProgressBar = true;
              
+                 
+        },
+
+        startTFBroadcast: function() {
+            
+            // Publish start signal to move arm and start calibration
+            let topic = new ROSLIB.Topic({
+                ros: this.ros,
+                name: '/start_tf_broadcast_topic',
+                messageType: 'std_msgs/Bool'
+            })
+            let message = new ROSLIB.Message({
+                data : true
+            })
+            topic.publish(message) 
+
+            this.tf_broadcast_started = true; 
                  
         },
 
