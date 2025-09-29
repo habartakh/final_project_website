@@ -162,6 +162,30 @@ let vueApp = new Vue({
                 rootObject: this.viewer.scene,
                 loader: ROS3D.COLLADA_LOADER_2
             })
+
+            // TF Visualization
+            const tfClient = new ROSLIB.TFClient({
+                ros: this.ros,
+                fixedFrame: 'world',
+                angularThres: 0.01,
+                transThres: 0.01,
+                rate: 10.0
+            });
+            const tfAxes = new ROS3D.Axes({
+                shaftRadius: 0.05,   
+                headRadius: 0.01,    
+                headLength: 0.02,     
+                length: 0.02         
+            });
+
+            tfClient.subscribe('aruco_link', function(tf) {
+                tfAxes.position.copy(tf.translation);
+                tfAxes.quaternion.copy(tf.rotation);
+            });
+            // Scale the entire axes down to 20% of original size
+            tfAxes.scale.set(0.2, 0.2, 0.2);
+            this.viewer.scene.add(tfAxes);
+
         },
         unset3DViewer() {
             document.getElementById('div3DViewer').innerHTML = ''
