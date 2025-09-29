@@ -51,6 +51,38 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="col-md-6">
+                    <div class="card border-light mb-3">
+                        <div class="joint-control-container">
+                            <h3>Set Joint Positions</h3>
+
+                            <!-- <div v-for="(value, index) in jointInputs" :key="index" class="joint-input">
+                                <label class="form-label">Joint {{ index + 1 }}:</label>
+                                <input class="form-control" type="number" v-model.number="jointInputs[index]"
+                                    step="0.01" />
+                            </div> -->
+
+                            <div v-for="(value, index) in jointInputs" :key="index"
+                                class="joint-input d-flex align-items-center mb-2">
+                                <label class="form-label me-2 mb-0" style="width: 100px;">Joint {{ index + 1 }}:</label>
+                                <input class="form-control flex-grow-1" type="number"
+                                    v-model.number="jointInputs[index]" step="0.01" />
+                            </div>
+
+
+                            <button class="mt-2 btn btn-primary" :disabled="!connected" @click="sendJointValues">Send
+                                Joint Positions</button>
+
+                            <div v-if="serviceResult !== null">
+                                <p v-if="serviceResult"> Joint positions sent successfully!</p>
+                                <p v-else> Failed to send joint positions.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
             </div>
 
 
@@ -80,15 +112,11 @@
                             <div id="div3DViewer"></div>
                             <!-- Progress Bar -->
                             <div class="progress" v-show="showProgressBar" style="margin-top: 10px;">
-                            <div
-                                class="progress-bar progress-bar-striped progress-bar-animated"
-                                role="progressbar"
-                                :aria-valuenow="progress"
-                                aria-valuemin="0"
-                                aria-valuemax="100"
-                                :style="{ width: progress + '%' }">
-                                {{ Math.floor(progress) }}%
-                            </div>
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                                    :aria-valuenow="progress" aria-valuemin="0" aria-valuemax="100"
+                                    :style="{ width: progress + '%' }">
+                                    {{ Math.floor(progress) }}%
+                                </div>
                             </div>
 
                         </div>

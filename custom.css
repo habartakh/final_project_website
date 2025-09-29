@@ -4,3 +4,7 @@ footer {
     width: 100%;
     /* Ensures the footer spans the full width */
 }
+
+.oint-control-container{
+  display:flex;
+}

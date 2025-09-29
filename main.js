@@ -3,7 +3,7 @@ let vueApp = new Vue({
     data: {
         // ros connection
         ros: null,
-        rosbridge_address: 'wss://i-013742bf516764eb5.robotigniteacademy.com/6127e1a7-6d6f-4851-bf29-f4d3b2632ef4/rosbridge/',
+        rosbridge_address: 'wss://i-07d78d27669f5e22c.robotigniteacademy.com/73cce78b-b87f-4aee-a9f3-453ff3ae0121/rosbridge/',
         connected: false,
         // page content
         menu_title: 'Connection',
@@ -16,6 +16,10 @@ let vueApp = new Vue({
         progress: 0,
         showProgressBar: false,
         trajectoryStarted: false,
+        // Start Position Joint Values
+        jointInputs: [0, 0, 0, 0, 0, 0], 
+        serviceResult: null,
+
 
     },
     methods: {
@@ -165,6 +169,30 @@ let vueApp = new Vue({
                 }
             });
         },
+
+        sendJointValues() {
+            const service = new ROSLIB.Service({
+                ros: this.ros,
+                name: '/set_arm_joints',
+                serviceType: 'moveit2_services/srv/ArmJoints'
+            });
+
+            const request = new ROSLIB.ServiceRequest({
+                input_array: {
+                layout: { dim: [], data_offset: 0 }, // minimal layout
+                data: this.jointInputs
+                }
+            });
+
+            service.callService(request, (result) => {
+                this.serviceResult = result.success;
+                console.log('Service call result:', result);
+            }, (error) => {
+                console.error('Service call failed:', error);
+                this.serviceResult = false;
+            });
+        },
+
     },
     mounted() {
         // page is ready
