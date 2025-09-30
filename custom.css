@@ -5,6 +5,30 @@ footer {
     /* Ensures the footer spans the full width */
 }
 
-.oint-control-container{
-  display:flex;
+.camera-overlay {
+    position: absolute;
+    top: 20px;
+    right: 10px;
+    width: 255px;
+    height: 205px;
+    border: 2px solid #ddd;
+    background-color: #000;
+    z-index: 10;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+#divCamera {
+    /* center horizontally */
+    display: block;
+    overflow: hidden;
+}
+
+#div3DViewer {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    margin: 0 auto;
+    /* center horizontally */
+    display: block;
+    overflow: hidden;
 }

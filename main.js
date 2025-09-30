@@ -3,7 +3,7 @@ let vueApp = new Vue({
     data: {
         // ros connection
         ros: null,
-        rosbridge_address: 'wss://i-07d78d27669f5e22c.robotigniteacademy.com/73cce78b-b87f-4aee-a9f3-453ff3ae0121/rosbridge/',
+        rosbridge_address: 'wss://i-0885d3b9efa8c94b2.robotigniteacademy.com/d977110e-88a0-4b4c-a65d-6cb85e1ffe1d/rosbridge/',
         connected: false,
         // page content
         menu_title: 'Connection',
@@ -117,8 +117,8 @@ let vueApp = new Vue({
             let viewer = new MJPEGCANVAS.Viewer({
                 divID: 'divCamera',
                 host: host,
-                width: 320,
-                height: 240,
+                width: 250,
+                height: 200,
                 topic: '/aruco/image_marked',
                 ssl: true,
             })
@@ -128,8 +128,8 @@ let vueApp = new Vue({
             this.viewer = new ROS3D.Viewer({
                 background: '#cccccc',
                 divID: 'div3DViewer',
-                width: 350,
-                height: 320,
+                width: 650,
+                height: 420,
                 antialias: true,
                 fixedFrame: 'base_link'
             })
