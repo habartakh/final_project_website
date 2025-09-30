@@ -21,6 +21,10 @@
     <script src="./libs/ColladaLoader2.js"></script>
     <script src="./libs/STLLoader.js"></script>
     <script src="./libs/ros3d.min.js"></script>
+
+    <!-- Bootstrap Bundle with Popper: To switch nav tabs on click -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
 </head>
 
 <body>
@@ -52,7 +56,7 @@
                     </div>
                 </div>
 
-                <div class="col-md-6">
+                <!-- <div class="col-md-6">
                     <div class="card border-light mb-3">
                         <div class="joint-control-container">
                             <h3>Set Joint Positions</h3>
@@ -73,7 +77,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> -->
 
 
             </div>
@@ -107,46 +111,104 @@
                     </div>
                 </div>
 
-
-                <!-- Camera Video feed Container  -->
                 <div class="col-md-5">
                     <div class="card border-light mb-3">
                         <div class="card-body">
-                            <h2 class="text-center">Camera</h2>
-                            <hr>
-                            <!-- <div id="divCamera"></div> -->
-                            <!-- <p>Some actions for the robot</p>-->
-                            <button class="mt-2 btn btn-primary" :disabled="!connected" @click="startTrajectory">Start
-                                Trajectory!</button>
-                            <button class="mt-2 btn btn-primary" :disabled="!connected" @click="startTFBroadcast">Start
-                                TF Broadcasting!</button>
+                            <ul class="nav nav-tabs" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <a class="nav-link active" data-bs-toggle="tab" href="#home" aria-selected="true"
+                                        role="tab">Start Position</a>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <a class="nav-link" data-bs-toggle="tab" href="#profile" aria-selected="false"
+                                        role="tab" tabindex="-1">Trajectory</a>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <a class="nav-link" data-bs-toggle="tab" href="#test" aria-selected="false"
+                                        role="tab" tabindex="-1">Test</a>
+                                </li>
+                            </ul>
+
+
+                            <div id="myTabContent" class="tab-content">
+
+                                <!--Tab to position the robot in start position-->
+                                <div class="tab-pane fade active show" id="home" role="tabpanel">
+                                    <div class="joint-control-container">
+                                        <h3>Set Joint Positions</h3>
+
+                                        <div v-for="(value, index) in jointInputs" :key="index"
+                                            class="joint-input d-flex align-items-center mb-2">
+                                            <label class="form-label me-2 mb-0" style="width: 100px;">Joint {{ index + 1
+                                                }}:</label>
+                                            <input class="form-control flex-grow-1" type="number"
+                                                v-model.number="jointInputs[index]" step="0.01" />
+                                        </div>
+
+                                        <button class="mt-2 btn btn-primary" :disabled="!connected"
+                                            @click="sendJointValues">Send
+                                            Joint Positions</button>
+
+                                        <div v-if="serviceResult !== null">
+                                            <p v-if="serviceResult"> Joint positions sent successfully!</p>
+                                            <p v-else> Failed to send joint positions.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                <!--Tab to start robot trajectory and TF computation-->
+                                <div class="tab-pane fade" id="profile" role="tabpanel">
+
+                                    <!--Button to start Trajectory and TF Computation-->
+                                    <button class="mt-2 btn btn-primary" :disabled="!connected"
+                                        @click="startTrajectory">Start
+                                        Trajectory!</button>
+
+                                    <!-- Progress Bar -->
+                                    <div class="progress" v-show="showProgressBar" style="margin-top: 10px;">
+                                        <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                            role="progressbar" :aria-valuenow="progress" aria-valuemin="0"
+                                            aria-valuemax="100" :style="{ width: progress + '%' }">
+                                            {{ Math.floor(progress) }}%
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!--Tab to start robot trajectory and TF computation-->
+                                <div class="tab-pane fade" id="test" role="tabpanel">
+
+                                    <p>TF computed. Start Broadcasting:</p>
+                                    <button class="mt-2 btn btn-primary" :disabled="!connected"
+                                        @click="startTFBroadcast">Start
+                                        TF Broadcasting</button>
+                                </div>
+
+                            </div>
+
+
                         </div>
                     </div>
                 </div>
 
 
 
-
-                <!-- Robot TF Visualization-->
-                <!-- <div class="col-md-6">
+                <!-- Camera Video feed Container  -->
+                <!-- <div class="col-md-5">
                     <div class="card border-light mb-3">
-                        <div class="card-body">
-                            <h2 class="text-center">Robot Model</h2>
-                            <hr>
-                            <div id="div3DViewer"></div> -->
-
-                <!-- Progress Bar -->
-                <!-- <div class="progress" v-show="showProgressBar" style="margin-top: 10px;">
-                                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
-                                    :aria-valuenow="progress" aria-valuemin="0" aria-valuemax="100"
-                                    :style="{ width: progress + '%' }">
-                                    {{ Math.floor(progress) }}%
-                                </div>
-                            </div>
-
-                        </div>
+                        <div class="card-body"> -->
+                <!-- <h2 class="text-center">Camera</h2>
+                            <hr> -->
+                <!-- <div id="divCamera"></div> -->
+                <!-- <p>Some actions for the robot</p>-->
+                <!-- <button class="mt-2 btn btn-primary" :disabled="!connected" @click="startTrajectory">Start
+                                Trajectory!</button>
+                            <button class="mt-2 btn btn-primary" :disabled="!connected" @click="startTFBroadcast">Start
+                                TF Broadcasting!</button> -->
+                <!-- </div>
                     </div>
                 </div> -->
+
             </div>
 
 
