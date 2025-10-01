@@ -3,7 +3,7 @@ let vueApp = new Vue({
     data: {
         // ros connection
         ros: null,
-        rosbridge_address: 'wss://i-0ba15d6621869f636.robotigniteacademy.com/6ae9ba60-ae17-48a3-a867-06378f2310fd/rosbridge/',
+        rosbridge_address: 'wss://i-0ffaa1a2bdc2f087e.robotigniteacademy.com/e6a37e10-8c50-42b3-aeac-20c43a78c316/rosbridge/',
         connected: false,
         // page content
         menu_title: 'Connection',
@@ -21,6 +21,10 @@ let vueApp = new Vue({
         serviceResult: null,
         //TF broadcast
         tf_broadcast_started: false,
+        // Detected Circles
+        detectedCircles: {},
+        // End_effector pose to go towards the detected circle
+        goal_pose: [],
 
 
     },
@@ -29,7 +33,7 @@ let vueApp = new Vue({
             // define ROSBridge connection object
             this.ros = new ROSLIB.Ros({
                 url: this.rosbridge_address,
-                timeout : 120000, //120s
+                timeout : 360000, //360s
                 groovyCompatibility: false //! IMPORTANT: Cannot visualize the robot without it!
             })
 
@@ -85,9 +89,7 @@ let vueApp = new Vue({
 
             this.trajectoryStarted = true;
             this.progress = 0;
-            this.showProgressBar = true;
-             
-                 
+            this.showProgressBar = true;    
         },
 
         startTFBroadcast: function() {
@@ -235,6 +237,83 @@ let vueApp = new Vue({
                 this.serviceResult = false;
             });
         },
+
+        // Start Circle Detection
+        startCircleDetection() {
+            const startDetectionPublisher = new ROSLIB.Topic({
+                ros: this.ros,
+                name: '/start_circle_detection', 
+                messageType: 'std_msgs/Bool',
+            });
+
+            // Give the signal to start detection 
+            startDetectionPublisher.publish(new ROSLIB.Message({ data: true }));
+
+            // Subscribe to get each detected circle pose
+            const circlePoseSub = new ROSLIB.Topic({
+                ros: this.ros,
+                name: '/detected_circles/poses',
+                messageType: 'circle_pattern_pose_estimation/CirclePoseArray'
+            });
+
+            circlePoseSub.subscribe((msg) => {
+                // Save all poses indexed by label
+                msg.circles.forEach((circle) => {
+                    // this.detectedCircles[circle.label] = circle.pose;
+                    this.$set(this.detectedCircles, circle.label, circle.pose);
+
+                });
+            });
+
+        },
+
+        // Go towards selected circle:
+        goToCirclePose(label) {
+            const pose = this.detectedCircles[label];
+            if (pose) {
+                console.log(`Pose of ${label}:`, pose);
+                this.goal_pose.push(pose.pose.position.x);
+                this.goal_pose.push(pose.pose.position.y);
+                this.goal_pose.push(pose.pose.position.z + 0.400);
+                this.goal_pose.push(0.707);
+                this.goal_pose.push(0);
+                this.goal_pose.push(0);
+                this.goal_pose.push(0.707);
+                // this.goal_pose.push(pose.pose.orientation.x);
+                // this.goal_pose.push(pose.pose.orientation.y);
+                // this.goal_pose.push(pose.pose.orientation.z);
+                // this.goal_pose.push(pose.pose.orientation.w);
+
+                console.log(`Goal Pose is:`, this.goal_pose);
+
+            } else {
+                alert(`No data for ${label}`);
+            }
+
+            const service = new ROSLIB.Service({
+                ros: this.ros,
+                name: '/go_to_pose',
+                serviceType: 'moveit2_services/srv/ArmJoints'
+            });
+
+            const request = new ROSLIB.ServiceRequest({
+                input_array: {
+                layout: { dim: [], data_offset: 0 }, // minimal layout
+                data: this.goal_pose
+                }
+            });
+
+            service.callService(request, (result) => {
+                this.serviceResult = result.success;
+                console.log('Service call result:', result);
+            }, (error) => {
+                console.error('Service call failed:', error);
+                this.serviceResult = false;
+            });
+
+            // Empty goal_pose for the next service call 
+            this.goal_pose = []
+        }
 
     },
     mounted() {

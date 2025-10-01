@@ -99,14 +99,6 @@
                             <!-- Camera feed (overlayed at top-right corner) -->
                             <div id="divCamera" class="camera-overlay"></div>
 
-                            <!-- Progress Bar -->
-                            <div class="progress" v-show="showProgressBar" style="margin-top: 10px;">
-                                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
-                                    :aria-valuenow="progress" aria-valuemin="0" aria-valuemax="100"
-                                    :style="{ width: progress + '%' }">
-                                    {{ Math.floor(progress) }}%
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -182,6 +174,32 @@
                                     <button class="mt-2 btn btn-primary" :disabled="!connected"
                                         @click="startTFBroadcast">Start
                                         TF Broadcasting</button>
+
+                                    <button class="mt-2 btn btn-primary" :disabled="!connected"
+                                        @click="startCircleDetection">Start
+                                        Circle Detection</button>
+
+                                    <!-- Only show buttons for available circles -->
+                                    <p>Select circle to go towards to:</p>
+                                    <button class="mt-2 btn btn-primary"
+                                        :disabled="!connected || !detectedCircles['c_1']"
+                                        @click="goToCirclePose('c_1')">
+                                        1
+                                    </button>
+                                    <button class="mt-2 btn btn-primary"
+                                        :disabled="!connected || !detectedCircles['c_2']"
+                                        @click="goToCirclePose('c_2')">
+                                        2
+                                    </button>
+                                    <button class="mt-2 btn btn-primary"
+                                        :disabled="!connected || !detectedCircles['c_3']"
+                                        @click="goToCirclePose('c_3')">
+                                        3
+                                    </button>
+
+
+
+
                                 </div>
 
                             </div>
