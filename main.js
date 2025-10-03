@@ -3,7 +3,7 @@ let vueApp = new Vue({
     data: {
         // ros connection
         ros: null,
-        rosbridge_address: 'wss://i-0ffaa1a2bdc2f087e.robotigniteacademy.com/e6a37e10-8c50-42b3-aeac-20c43a78c316/rosbridge/',
+        rosbridge_address: 'wss://i-04829ecc2e7b85831.robotigniteacademy.com/b3139ed1-b353-4a40-b29c-ac3f413375d8/rosbridge/',
         connected: false,
         // page content
         menu_title: 'Connection',
@@ -17,7 +17,7 @@ let vueApp = new Vue({
         showProgressBar: false,
         trajectoryStarted: false,
         // Start Position Joint Values
-        jointInputs: [0, 0, 0, 0, 0, 0], 
+        jointInputs: [0.14, -2.79, -1.36, -0.23, 2.6, -1.26], 
         serviceResult: null,
         //TF broadcast
         tf_broadcast_started: false,
@@ -25,6 +25,13 @@ let vueApp = new Vue({
         detectedCircles: {},
         // End_effector pose to go towards the detected circle
         goal_pose: [],
+        //camera viewer to change dynamically input topic
+        camera_viewer: null,
+        // TF values 
+        tfData: {
+            translation: { x: 0, y: 0, z: 0 },
+            rotation: { x: 0, y: 0, z: 0, w: 1 }
+        }
 
 
     },
@@ -106,25 +113,71 @@ let vueApp = new Vue({
             topic.publish(message) 
 
             this.tf_broadcast_started = true; 
+
+            // Then show the TF on the webpage:
+            const cameraTFClient = new ROSLIB.TFClient({
+                ros: this.ros,
+                fixedFrame: 'base_link',
+                angularThres: 0.01,
+                transThres: 0.01,
+                rate: 10.0
+            });
+
+            const cameraAxes = new ROS3D.Axes({
+                shaftRadius: 0.02,
+                headRadius: 0.04,
+                headLength: 0.06,
+                length: 0.3
+            });
+
+            cameraAxes.scale.set(0.2, 0.2, 0.2);  // scale down if needed
+
+            // Subscribe to the camera TF
+            cameraTFClient.subscribe('D415_link', (tf) => {
+            cameraAxes.position.copy(tf.translation);
+            cameraAxes.quaternion.copy(tf.rotation);
+
+            // Update Vue's reactive data
+            this.tfData.translation = {
+                x: tf.translation.x.toFixed(3),
+                y: tf.translation.y.toFixed(3),
+                z: tf.translation.z.toFixed(3)
+            };
+            this.tfData.rotation = {
+                x: tf.rotation.x.toFixed(3),
+                y: tf.rotation.y.toFixed(3),
+                z: tf.rotation.z.toFixed(3),
+                w: tf.rotation.w.toFixed(3)
+            };
+        });
+
+            // Add to viewer scene
+            this.viewer.scene.add(cameraAxes);
                  
         },
 
-        setCamera: function() {
-            let without_wss = this.rosbridge_address.split('wss://')[1]
-            console.log(without_wss)
-            let domain = without_wss.split('/')[0] + '/' + without_wss.split('/')[1]
-            console.log(domain)
-            let host = domain 
-            //let host = domain + '/cameras'
-            let viewer = new MJPEGCANVAS.Viewer({
+        setCamera: function(topic = '/aruco/image_marked') {
+            let without_wss = this.rosbridge_address.split('wss://')[1];
+            let domain = without_wss.split('/')[0] + '/' + without_wss.split('/')[1];
+            let host = domain;
+
+            // If a viewer already exists, remove it from the DOM and reset
+            const cameraDiv = document.getElementById('divCamera');
+            if (cameraDiv) {
+                cameraDiv.innerHTML = ''; // remove old canvas to stop stream
+            }
+
+            // Recreate viewer with new topic
+            this.camera_viewer = new MJPEGCANVAS.Viewer({
                 divID: 'divCamera',
                 host: host,
                 width: 250,
                 height: 200,
-                topic: '/aruco/image_marked',
+                topic: topic,
                 ssl: true,
-            })
+            });
         },
+
 
         setup3DViewer() {
             this.viewer = new ROS3D.Viewer({
@@ -173,6 +226,18 @@ let vueApp = new Vue({
                 transThres: 0.01,
                 rate: 10.0
             });
+
+            const baseLinkAxes = new ROS3D.Axes({
+                shaftRadius: 0.05,
+                headRadius: 0.01,
+                headLength: 0.02,
+                length: 0.3
+            });
+            baseLinkAxes.position.set(0, 0, 0);
+            baseLinkAxes.scale.set(0.2, 0.2, 0.2);
+            this.viewer.scene.add(baseLinkAxes);
+
+
             const tfAxes = new ROS3D.Axes({
                 shaftRadius: 0.05,   
                 headRadius: 0.01,    
@@ -249,6 +314,9 @@ let vueApp = new Vue({
             // Give the signal to start detection 
             startDetectionPublisher.publish(new ROSLIB.Message({ data: true }));
 
+             // Switch camera feed to circle detection topic
+            this.setCamera('/circle_detector/image');
+
             // Subscribe to get each detected circle pose
             const circlePoseSub = new ROSLIB.Topic({
                 ros: this.ros,
@@ -274,11 +342,11 @@ let vueApp = new Vue({
                 console.log(`Pose of ${label}:`, pose);
                 this.goal_pose.push(pose.pose.position.x);
                 this.goal_pose.push(pose.pose.position.y);
-                this.goal_pose.push(pose.pose.position.z + 0.400);
-                this.goal_pose.push(0.707);
+                this.goal_pose.push(pose.pose.position.z - 0.400);
                 this.goal_pose.push(0);
                 this.goal_pose.push(0);
-                this.goal_pose.push(0.707);
+                this.goal_pose.push(0);
+                this.goal_pose.push(1);
                 // this.goal_pose.push(pose.pose.orientation.x);
                 // this.goal_pose.push(pose.pose.orientation.y);
                 // this.goal_pose.push(pose.pose.orientation.z);

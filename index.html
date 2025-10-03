@@ -151,7 +151,7 @@
 
                                 <!--Tab to start robot trajectory and TF computation-->
                                 <div class="tab-pane fade" id="profile" role="tabpanel">
-
+                                    <p>Start the calibration process:</p>
                                     <!--Button to start Trajectory and TF Computation-->
                                     <button class="mt-2 btn btn-primary" :disabled="!connected"
                                         @click="startTrajectory">Start
@@ -175,6 +175,19 @@
                                         @click="startTFBroadcast">Start
                                         TF Broadcasting</button>
 
+                                    <div v-if="tf_broadcast_started">
+                                        <h6>TF Translation</h6>
+                                        <p>X: {{ tfData.translation.x }}</p>
+                                        <p>Y: {{ tfData.translation.y }}</p>
+                                        <p>Z: {{ tfData.translation.z }}</p>
+
+                                        <h6>TF Rotation (Quaternion)</h6>
+                                        <p>X: {{ tfData.rotation.x }}</p>
+                                        <p>Y: {{ tfData.rotation.y }}</p>
+                                        <p>Z: {{ tfData.rotation.z }}</p>
+                                        <p>W: {{ tfData.rotation.w }}</p>
+                                    </div>
+
                                     <button class="mt-2 btn btn-primary" :disabled="!connected"
                                         @click="startCircleDetection">Start
                                         Circle Detection</button>
@@ -195,6 +208,26 @@
                                         :disabled="!connected || !detectedCircles['c_3']"
                                         @click="goToCirclePose('c_3')">
                                         3
+                                    </button>
+                                    <button class="mt-2 btn btn-primary"
+                                        :disabled="!connected || !detectedCircles['c_4']"
+                                        @click="goToCirclePose('c_4')">
+                                        4
+                                    </button>
+                                    <button class="mt-2 btn btn-primary"
+                                        :disabled="!connected || !detectedCircles['c_5']"
+                                        @click="goToCirclePose('c_5')">
+                                        5
+                                    </button>
+                                    <button class="mt-2 btn btn-primary"
+                                        :disabled="!connected || !detectedCircles['c_6']"
+                                        @click="goToCirclePose('c_6')">
+                                        6
+                                    </button>
+                                    <button class="mt-2 btn btn-primary"
+                                        :disabled="!connected || !detectedCircles['c_7']"
+                                        @click="goToCirclePose('c_7')">
+                                        7
                                     </button>
 
 
